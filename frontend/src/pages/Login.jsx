@@ -11,7 +11,7 @@ function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("https://password-reset-api.onrender.com/login", { email, password });
+      const res = await axios.post("https://reset-5alc.onrender.com/login", { email, password });
       setMessage("✅ Welcome back, " + res.data.username + "!");
       setTimeout(() => navigate("/"), 2000); // Redirect to Home after 2 seconds
     } catch (err) {

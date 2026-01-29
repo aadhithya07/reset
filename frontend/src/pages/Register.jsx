@@ -12,7 +12,7 @@ function Register() {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("https://password-reset-api.onrender.com/register", { username, email, password });
+      await axios.post("https://reset-5alc.onrender.com/register", { username, email, password });
       setMessage("✅ Account created! Redirecting...");
       setTimeout(() => navigate("/forgot-password"), 2000);
     } catch (err) {
