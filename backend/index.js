@@ -56,7 +56,7 @@ app.post("/forgot-password", async (req, res) => {
     const token = user._id + Date.now(); 
 
    // ✅ NEW LINE (Paste this exactly)
-res.json({ message: `https://illustrious-melomakarona-b45ba5.netlify.app/reset-password/${token}` });s 
+res.json({ message: `https://illustrious-melomakarona-b45ba5.netlify.app/reset-password/${token}` });
 
   } catch (err) { res.status(500).json({ message: err.message }); }
 });

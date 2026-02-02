@@ -4,7 +4,6 @@ import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Register from "./pages/Register"; // Import the new page
-
 function App() {
   return (
     <BrowserRouter>
@@ -20,5 +19,4 @@ function App() {
     </BrowserRouter>
   );
 }
-
 export default App;
