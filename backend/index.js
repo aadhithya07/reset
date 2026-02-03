@@ -46,19 +46,46 @@ app.post("/login", async (req, res) => {
   } catch (err) { res.status(500).json({ message: "Server error" }); }
 });
 
-// Forgot Password - SHOW LINK ON SCREEN VERSION
-app.post("/forgot-password", async (req, res) => {
-  const { email } = req.body;
-  try {
-    const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: "User not found" });
+// Forgot Password 
+app.post('/forgot-password', (req, res) => {
+    const { email } = req.body;
+    UserModel.findOne({ email: email })
+    .then(user => {
+        if(!user) {
+            return res.send({ Status: "User not existed" })
+        }
+        const token = jwt.sign({ id: user._id }, "jwt_secret_key", { expiresIn: "1d" });
+        
+        // Setup Nodemailer Transporter
+        var transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.MY_EMAIL,   // We will set this in Render later
+                pass: process.env.MY_PASSWORD // We will set this in Render later
+            }
+        });
 
-    const token = user._id + Date.now(); 
+        // The actual link (pointing to your Netlify Frontend)
+        // Make sure this matches your LIVE Netlify URL!
+        const resetLink = `https://illustrious-melomakarona-b45ba5.netlify.app/reset-password/${user._id}/${token}`;
 
-   // ✅ NEW LINE (Paste this exactly)
-res.json({ message: `https://illustrious-melomakarona-b45ba5.netlify.app/reset-password/${token}` });
+        var mailOptions = {
+            from: process.env.MY_EMAIL,
+            to: email,
+            subject: 'Reset Password Link',
+            text: `Click on the following link to reset your password: ${resetLink}`
+        };
 
-  } catch (err) { res.status(500).json({ message: err.message }); }
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.log(error);
+                return res.send({ Status: "Error sending email" });
+            } else {
+                return res.send({ Status: "Success" });
+            }
+        });
+    })
+    .catch(err => res.send({ Status: "Error", err }));
 });
 
 // Reset Password
