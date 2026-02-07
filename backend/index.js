@@ -59,13 +59,16 @@ app.post('/forgot-password', (req, res) => {
         const token = jwt.sign({ id: user._id }, "jwt_secret_key", { expiresIn: "1d" });
         
         // Setup Nodemailer Transporter
-        var transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: process.env.MY_EMAIL,   // We will set this in Render later
-                pass: process.env.MY_PASSWORD // We will set this in Render later
-            }
-        });
+        const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+  tls: {
+    rejectUnauthorized: false // This helps prevent some cloud SSL errors
+  }
+});
 
         // The actual link (pointing to your Netlify Frontend)
         // Make sure this matches your LIVE Netlify URL!
