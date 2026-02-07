@@ -49,6 +49,7 @@ app.post("/login", async (req, res) => {
 });
 
 // Forgot Password 
+// Forgot Password
 app.post('/forgot-password', (req, res) => {
     const { email } = req.body;
     User.findOne({ email: email })
@@ -56,31 +57,34 @@ app.post('/forgot-password', (req, res) => {
         if(!user) {
             return res.send({ Status: "User not existed" })
         }
+        
+        // Generate Token
         const token = jwt.sign({ id: user._id }, "jwt_secret_key", { expiresIn: "1d" });
         
         // Setup Nodemailer Transporter
-    const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true, // MUST be true for port 465
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+        const transporter = nodemailer.createTransport({
+            host: "smtp-relay.brevo.com", // Brevo's server
+            port: 587, // Standard secure port
+            secure: false,
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS,
+            },
+        });
 
-        // The actual link (pointing to your Netlify Frontend)
-        // Make sure this matches your LIVE Netlify URL!
-        const resetLink = `https://illustrious-melomakarona-b45ba5.netlify.app/reset-password/${user._id}/${token}`;
+        // CREATE THE LINK
+        // IMPORTANT: Replace 'http://localhost:5173' with your actual Netlify URL in production
+        const link = `https://illustrious-melomakarona-b45ba5.netlify.app/forgot-password/${user._id}/${token}`;
 
-        var mailOptions = {
-            from: process.env.MY_EMAIL,
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
             to: email,
             subject: 'Reset Password Link',
-            text: `Click on the following link to reset your password: ${resetLink}`
+            text: `Click the following link to reset your password: ${link}`
         };
 
-        transporter.sendMail(mailOptions, (error, info) => {
+        // Send the Mail
+        transporter.sendMail(mailOptions, function(error, info){
             if (error) {
                 console.log(error);
                 return res.send({ Status: "Error sending email" });
@@ -89,12 +93,5 @@ app.post('/forgot-password', (req, res) => {
             }
         });
     })
-    .catch(err => res.send({ Status: "Error", err }));
+    .catch(err => res.send({ Status: err.message }));
 });
-
-// Reset Password
-app.post("/reset-password/:token", async (req, res) => {
-  res.json({ message: "Password updated successfully" });
-});
-
-app.listen(5000, () => { console.log("🚀 Server running on port 5000"); });
