@@ -2,19 +2,20 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");       // <--- ADD THIS
-const nodemailer = require("nodemailer");  // <--- ADD THIS
+const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
 require("dotenv").config();
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Connect to MongoDB
+// 1. Connect to MongoDB
 mongoose.connect("mongodb+srv://admin:Aadhithya2026@cluster0.ym57j9z.mongodb.net/movie-reset-db?appName=Cluster0")
   .then(() => console.log("✅ MongoDB Connected"))
   .catch((err) => console.log("❌ MongoDB Error:", err));
 
+// 2. Define User Model
 const UserSchema = new mongoose.Schema({
   username: { type: String, required: true },
   email: { type: String, required: true, unique: true },
@@ -22,6 +23,8 @@ const UserSchema = new mongoose.Schema({
 });
 
 const User = mongoose.model("User", UserSchema);
+
+// 3. Routes
 
 // Register
 app.post("/register", async (req, res) => {
@@ -48,7 +51,6 @@ app.post("/login", async (req, res) => {
   } catch (err) { res.status(500).json({ message: "Server error" }); }
 });
 
-// Forgot Password 
 // Forgot Password
 app.post('/forgot-password', (req, res) => {
     const { email } = req.body;
@@ -61,10 +63,10 @@ app.post('/forgot-password', (req, res) => {
         // Generate Token
         const token = jwt.sign({ id: user._id }, "jwt_secret_key", { expiresIn: "1d" });
         
-        // Setup Nodemailer Transporter
+        // Setup Nodemailer
         const transporter = nodemailer.createTransport({
-            host: "smtp-relay.brevo.com", // Brevo's server
-            port: 587, // Standard secure port
+            host: "smtp-relay.brevo.com",
+            port: 587,
             secure: false,
             auth: {
                 user: process.env.EMAIL_USER,
@@ -72,9 +74,8 @@ app.post('/forgot-password', (req, res) => {
             },
         });
 
-        // CREATE THE LINK
-        // IMPORTANT: Replace 'http://localhost:5173' with your actual Netlify URL in production
-        const link = `https://illustrious-melomakarona-b45ba5.netlify.app/forgot-password/${user._id}/${token}`;
+        // Link (Update with your live Frontend URL)
+        const link = `https://illustrious-melomakarona-b45ba5.netlify.app/reset_password/${user._id}/${token}`;
 
         const mailOptions = {
             from: process.env.EMAIL_USER,
@@ -83,7 +84,7 @@ app.post('/forgot-password', (req, res) => {
             text: `Click the following link to reset your password: ${link}`
         };
 
-        // Send the Mail
+        // Send Mail
         transporter.sendMail(mailOptions, function(error, info){
             if (error) {
                 console.log(error);
@@ -95,12 +96,10 @@ app.post('/forgot-password', (req, res) => {
     })
     .catch(err => res.send({ Status: err.message }));
 });
-// ... (your existing code ends above here)
 
-// Define the port using the environment variable provided by Render
-// If that variable isn't found (like on your local PC), it falls back to 3001
+// 4. Start Server
+// This MUST be outside of all routes
 const PORT = process.env.PORT || 3001;
-
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server is running on port ${PORT}`);
 });
