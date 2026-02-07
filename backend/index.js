@@ -95,3 +95,12 @@ app.post('/forgot-password', (req, res) => {
     })
     .catch(err => res.send({ Status: err.message }));
 });
+// ... (your existing code ends above here)
+
+// Define the port using the environment variable provided by Render
+// If that variable isn't found (like on your local PC), it falls back to 3001
+const PORT = process.env.PORT || 3001;
+
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
