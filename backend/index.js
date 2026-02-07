@@ -49,7 +49,7 @@ app.post("/login", async (req, res) => {
 // Forgot Password 
 app.post('/forgot-password', (req, res) => {
     const { email } = req.body;
-    UserModel.findOne({ email: email })
+    User.findOne({ email: email })
     .then(user => {
         if(!user) {
             return res.send({ Status: "User not existed" })
