@@ -8,27 +8,28 @@ function ForgotPassword() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        
-        // REPLACE THIS URL WITH YOUR DEPLOYED RENDER BACKEND URL
-        // Example: https://my-movie-app.onrender.com/forgot-password
-        axios.post('https://reset-5alc.onrender.com/', { email })
+        // REMINDER: Make sure this URL matches your Render Backend
+        axios.post('https://reset-5alc.onrender.com/forgot-password', { email })
         .then(res => {
             if(res.data.Status === "Success") {
                 alert("Check your email for the reset link!");
                 navigate('/login');
             } else {
-                alert(res.data.Status); // Show error like "User not existed"
+                alert(res.data.Status);
             }
         }).catch(err => console.log(err));
     }
 
     return (
-        <div className="d-flex justify-content-center align-items-center bg-secondary vh-100">
-            <div className="bg-white p-3 rounded w-25">
-                <h4>Forgot Password</h4>
+        // TAILWIND STYLING:
+        // flex, justify-center, items-center -> Centers the card
+        // bg-black/50 -> Adds a dim overlay if needed, or matches your theme
+        <div className="flex justify-center items-center h-screen bg-gray-900 text-white">
+            <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-96 border border-gray-700">
+                <h4 className="text-2xl font-bold mb-4 text-center">Forgot Password</h4>
                 <form onSubmit={handleSubmit}>
-                    <div className="mb-3">
-                        <label htmlFor="email">
+                    <div className="mb-4">
+                        <label htmlFor="email" className="block text-gray-300 font-bold mb-2">
                             <strong>Email</strong>
                         </label>
                         <input
@@ -36,11 +37,11 @@ function ForgotPassword() {
                             placeholder="Enter Email"
                             autoComplete="off"
                             name="email"
-                            className="form-control rounded-0"
+                            className="w-full px-3 py-2 text-black border rounded focus:outline-none focus:ring-2 focus:ring-green-500"
                             onChange={(e) => setEmail(e.target.value)}
                         />
                     </div>
-                    <button type="submit" className="btn btn-success w-100 rounded-0">
+                    <button type="submit" className="w-full bg-green-600 text-white font-bold py-2 px-4 rounded hover:bg-green-700 transition duration-200">
                         Send
                     </button>
                 </form>
