@@ -2,7 +2,8 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
-const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");       // <--- ADD THIS
+const nodemailer = require("nodemailer");  // <--- ADD THIS
 require("dotenv").config();
 
 const app = express();
