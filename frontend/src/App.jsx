@@ -13,7 +13,7 @@ function App() {
           <Route path="/register" element={<Register />} />  {/* New Route */}
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="/reset_password/:id/:token" element={<ResetPassword />} />
         </Routes>
       </div>
     </BrowserRouter>

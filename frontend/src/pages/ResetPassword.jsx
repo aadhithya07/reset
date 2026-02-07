@@ -1,45 +1,51 @@
-import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import React, { useState } from 'react';
+import { useNavigate, useParams } from "react-router-dom";
+import axios from 'axios';
 
 function ResetPassword() {
-  const { token } = useParams();
-  const navigate = useNavigate();
-  const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
+    const [password, setPassword] = useState('');
+    const navigate = useNavigate();
+    const {id, token} = useParams(); // Capture parameters from the URL
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await axios.post(`https://illustrious-melomakarona-b45ba5.netlify.app/forgot-password/${token}`, { newPassword: password });
-      setMessage("✅ " + res.data.message);
-      setTimeout(() => navigate("/"), 2000);
-    } catch (err) {
-      setMessage("❌ Error: " + (err.response?.data?.message || "Invalid Token"));
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        
+        // UPDATE THIS TO YOUR RENDER URL
+        axios.post(`https://reset-5alc.onrender.com/reset-password/${id}/${token}`, { password })
+        .then(res => {
+            if(res.data.Status === "Success") {
+                navigate('/login');
+            } else {
+                alert(res.data.Status); // Display error (e.g., "Error with token")
+            }
+        }).catch(err => console.log(err));
     }
-  };
 
-  return (
-    <div className="flex flex-col items-center justify-center h-screen bg-movie-black">
-      <div className="bg-movie-gray p-8 rounded-lg shadow-2xl w-96 border border-gray-800">
-        <h2 className="text-2xl font-bold mb-6 text-movie-yellow text-center">New Password</h2>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <label className="text-gray-400 text-sm">Enter New Password</label>
-          <input
-            type="password"
-            className="p-3 rounded bg-gray-900 border border-gray-700 text-white focus:outline-none focus:border-movie-yellow"
-            placeholder="********"
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-          <button className="bg-green-600 text-white font-bold py-3 rounded hover:bg-green-500 transition">
-            Update Password
-          </button>
-        </form>
-        {message && <p className="mt-4 text-center font-medium text-white">{message}</p>}
-      </div>
-    </div>
-  );
+    return (
+        <div className="d-flex justify-content-center align-items-center bg-secondary vh-100">
+            <div className="bg-white p-3 rounded w-25">
+                <h4>Reset Password</h4>
+                <form onSubmit={handleSubmit}>
+                    <div className="mb-3">
+                        <label htmlFor="password">
+                            <strong>New Password</strong>
+                        </label>
+                        <input
+                            type="password"
+                            placeholder="Enter Password"
+                            autoComplete="off"
+                            name="password"
+                            className="form-control rounded-0"
+                            onChange={(e) => setPassword(e.target.value)}
+                        />
+                    </div>
+                    <button type="submit" className="btn btn-success w-100 rounded-0">
+                        Update
+                    </button>
+                </form>
+            </div>
+        </div>
+    );
 }
 
 export default ResetPassword;
