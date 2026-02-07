@@ -11,7 +11,7 @@ function ResetPassword() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post(`http://localhost:5000/reset-password/${token}`, { newPassword: password });
+      const res = await axios.post(`https://illustrious-melomakarona-b45ba5.netlify.app/forgot-password/${token}`, { newPassword: password });
       setMessage("✅ " + res.data.message);
       setTimeout(() => navigate("/"), 2000);
     } catch (err) {
