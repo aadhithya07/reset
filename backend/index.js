@@ -81,12 +81,11 @@ app.post('/reset-password/:id/:token', (req, res) => {
         
         // Generate Token
         const token = jwt.sign({ id: user._id }, "jwt_secret_key", { expiresIn: "1d" });
-        
-        // Setup Nodemailer
+        // Setup Nodemailer Transporter
         const transporter = nodemailer.createTransport({
             host: "smtp-relay.brevo.com",
-            port: 587,
-            secure: false,
+            port: 465,       // CHANGE THIS: 587 -> 465
+            secure: true,    // CHANGE THIS: false -> true
             auth: {
                 user: process.env.EMAIL_USER,
                 pass: process.env.EMAIL_PASS,
