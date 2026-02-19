@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const nodemailer = require("nodemailer");
+const SibApiV3Sdk = require('sib-api-v3-sdk'); // <-- 1. Added Brevo SDK
 require("dotenv").config();
 
 const app = express();
@@ -51,22 +51,63 @@ app.post("/login", async (req, res) => {
   } catch (err) { res.status(500).json({ message: "Server error" }); }
 });
 
-// Forgot Password
-app.post('/forgot-password', (req, res) => {
+// Forgot Password (UPDATED WITH BREVO SDK)
+app.post('/forgot-password', async (req, res) => {
     const { email } = req.body;
-    User.findOne({ email: email })
-    .then(user => {
+    
+    try {
+        const user = await User.findOne({ email: email });
         if(!user) {
-            return res.send({ Status: "User not existed" })
+            return res.send({ Status: "User not existed" });
         }
-        // Reset Password Route
+        
+        // Generate Token
+        const token = jwt.sign({ id: user._id }, "jwt_secret_key", { expiresIn: "1d" });
+        
+        // Link mapping to your React frontend
+        const link = `https://illustrious-melomakarona-b45ba5.netlify.app/reset_password/${user._id}/${token}`;
+
+        // Setup Brevo API
+        const defaultClient = SibApiV3Sdk.ApiClient.instance;
+        const apiKey = defaultClient.authentications['api-key'];
+        apiKey.apiKey = process.env.BREVO_API_KEY; // Must be in your .env / Render Env
+
+        const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+        const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+
+        sendSmtpEmail.sender = { email: "aadhithya799@gmail.com", name: "Movie App Support" };
+        sendSmtpEmail.to = [{ email: email }];
+        sendSmtpEmail.subject = "Reset Password Link";
+        
+        // Sending as a clickable HTML link
+        sendSmtpEmail.htmlContent = `
+            <h3>Password Reset Request</h3>
+            <p>Click the link below to reset your password:</p>
+            <a href="${link}" style="display:inline-block; padding:10px 20px; color:white; background-color:blue; text-decoration:none; border-radius:5px;">Reset My Password</a>
+            <br><br>
+            <p>If the button doesn't work, copy and paste this link into your browser:</p>
+            <p>${link}</p>
+        `;
+
+        // Send Mail
+        await apiInstance.sendTransacEmail(sendSmtpEmail);
+        console.log("✅ Reset email sent successfully to: " + email);
+        return res.send({ Status: "Success" });
+
+    } catch (err) {
+        console.error("❌ Error sending email:", err.response ? err.response.text : err.message);
+        return res.send({ Status: "Error sending email" });
+    }
+});
+
+// Reset Password Route (MOVED OUTSIDE)
 app.post('/reset-password/:id/:token', (req, res) => {
     const {id, token} = req.params;
     const {password} = req.body;
 
     jwt.verify(token, "jwt_secret_key", (err, decoded) => {
         if(err) {
-            return res.json({Status: "Error with token"})
+            return res.json({Status: "Error with token"});
         } else {
             bcrypt.hash(password, 10)
             .then(hash => {
@@ -77,46 +118,9 @@ app.post('/reset-password/:id/:token', (req, res) => {
             .catch(err => res.send({Status: err}))
         }
     })
-})
-        
-        // Generate Token
-        const token = jwt.sign({ id: user._id }, "jwt_secret_key", { expiresIn: "1d" });
-        // Setup Nodemailer Transporter (Using Backup Port 2525)
-        const transporter = nodemailer.createTransport({
-            host: "smtp-relay.brevo.com",
-            port: 2525,      // CHANGE THIS: Try port 2525
-            secure: false,   // Must be false for port 2525
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS,
-            },
-        });
-
-        // Link (Update with your live Frontend URL)
-        const link = `https://illustrious-melomakarona-b45ba5.netlify.app/reset_password/${user._id}/${token}`;
-
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: email,
-            subject: 'Reset Password Link',
-            text: `Click the following link to reset your password: ${link}`
-        };
-
-        // Send Mail
-        transporter.sendMail(mailOptions, function(error, info){
-            if (error) {
-                console.log(error);
-                return res.send({ Status: "Error sending email" });
-            } else {
-                return res.send({ Status: "Success" });
-            }
-        });
-    })
-    .catch(err => res.send({ Status: err.message }));
 });
 
 // 4. Start Server
-// This MUST be outside of all routes
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server is running on port ${PORT}`);
